@@ -1,8 +1,10 @@
 const express = require('express');
 const app = express();
 const PORT = 3000;
+const bodyParser = require('body-parser');
 
 app.set('view engine', 'ejs')
+app.use(bodyParser.urlencoded({extended: true}))
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -10,11 +12,11 @@ const urlDatabase = {
 };
 
 app.get('/', (req, res) => {
-  res.send('Hello')
+  res.redirect('/urls')
 });
 
-app.get('/hello', (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n")
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new')
 })
 
 app.get('/urls.json', (req, res) => {
@@ -31,6 +33,11 @@ app.get('/urls/:shortURL', (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }
 
   res.render('urls_show', templateVars)
+})
+
+app.post('/url', (req, res) => {
+  console.log(req.body)
+  res.send('ok')
 })
 
 app.listen(PORT, () => {
