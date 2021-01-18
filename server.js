@@ -3,6 +3,8 @@ const app = express();
 const PORT = 3000;
 const bodyParser = require('body-parser');
 
+const { generateRandomString } = require('./randomStringGenerator')
+
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
 
