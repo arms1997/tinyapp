@@ -58,6 +58,12 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${randomString}`);
 });
 
+app.post('/urls/:id/delete', (req, res) =>{
+  delete urlDatabase[req.params.id]
+
+  res.redirect('/')
+})
+
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
