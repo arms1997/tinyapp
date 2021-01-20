@@ -4,7 +4,8 @@ const PORT = 3000;
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser')
 
-const { generateRandomString } = require('./randomStringGenerator')
+const { generateRandomString } = require('./helper_functions/randomStringGenerator')
+const { checkIfUserExists } = require('./helper_functions/checkIfEmailExists')
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -82,6 +83,14 @@ app.post('/urls/:id/delete', (req, res) => {
   res.redirect('/')
 })
 
+app.get('/login', (req, res) => {
+  const templateVars = {
+    user: users[req.cookies['user_id']]
+  }
+
+  res.render('urls_login', templateVars);
+})
+
 app.post('/login', (req, res) => {
   res.cookie('user_id', req.body.user_id);
 
@@ -105,12 +114,16 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
 
-  for(let key in users){
-    if(users[key].email === email){
-      console.log('user already exists')
-      res.redirect('/register')
-      return
-    }
+  if(!name || !email || !password){
+    console.log('please make sure to provide all required information')
+    res.status(400).redirect('/register');
+    return;
+  }
+
+  if(checkIfUserExists(users, email)){
+    console.log('user with the given email already exists in the db')
+    res.status(400).redirect('/register');
+    return;
   }
 
   const id = generateRandomString();
