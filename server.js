@@ -5,7 +5,8 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser')
 
 const { generateRandomString } = require('./helper_functions/randomStringGenerator')
-const { checkIfUserExists } = require('./helper_functions/checkIfEmailExists')
+const { checkIfUserExists, findUser } = require('./helper_functions/checkIfEmailExists');
+
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -35,11 +36,11 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const templateVars = { 
-    urls: urlDatabase, 
+  const templateVars = {
+    urls: urlDatabase,
     user: users[req.cookies['user_id']]
   };
-  
+
   res.render('urls_index', templateVars);
 });
 
@@ -92,9 +93,16 @@ app.get('/login', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
-  res.cookie('user_id', req.body.user_id);
+  const { email, password } = req.body
 
-  res.redirect('/')
+  const userKey = findUser(users, email, password)
+
+  if (userKey) {
+    res.cookie('user_id', userKey)
+    res.redirect('/')
+  } else {
+    res.status(403).redirect('/login')
+  }
 })
 
 app.post('/logout', (req, res) => {
@@ -114,13 +122,13 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
 
-  if(!name || !email || !password){
+  if (!name || !email || !password) {
     console.log('please make sure to provide all required information')
     res.status(400).redirect('/register');
     return;
   }
 
-  if(checkIfUserExists(users, email)){
+  if (checkIfUserExists(users, email)) {
     console.log('user with the given email already exists in the db')
     res.status(400).redirect('/register');
     return;
@@ -131,7 +139,7 @@ app.post('/register', (req, res) => {
   const newUser = {
     id,
     name,
-    email, 
+    email,
     password
   }
 
