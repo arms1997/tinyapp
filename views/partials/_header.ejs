@@ -21,19 +21,17 @@
     </div>
 
     <% if(!user) {%>
-    <form class="form-inline" method="POST" action="/login">
-      <input
-        type="text"
-        placeholder="Username"
-        name="username"
-        class="form-control"
-        style="margin-right: 1em"
-      />
+    <form class="form-inline" action="/login" style="margin-right: 1em">
       <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <form class="form-inline" action="/register">
+      <button type="submit" class="btn btn-primary">Register</button>
     </form>
     <% } else {%>
     <form class="form-inline" method="POST" action="/logout">
-      <p style="margin: auto; margin-right: 1em">Logged In As: <%=user.email%></p>
+      <p style="margin: auto; margin-right: 1em">
+        Logged In As: <%=user.email%>
+      </p>
       <button class="btn btn-outline-dark" type="submit">Logout</button>
     </form>
     <%} %>
