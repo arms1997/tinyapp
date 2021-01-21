@@ -73,12 +73,12 @@ app.get('/urls', (req, res) => {
 //get a specific shortURL
 app.get('/urls/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    res.redirect('/');
+    res.redirect('/urls?doesntExist=true');
     return
   }
 
   if (urlDatabase[req.params.shortURL].userID !== req.session['user_id']) {
-    res.status(403).redirect('/?denied=true');
+    res.status(403).redirect('/urls?denied=true');
     return
   }
 
@@ -116,7 +116,7 @@ app.post('/urls', (req, res) => {
 app.post('/urls/:id', (req, res) => {
 
   if (urlDatabase[req.params.id].userID !== req.session['user_id']) {
-    res.status(403).redirect('/');
+    res.status(403).redirect('/urls?denied=true');
     return
   }
 
@@ -128,7 +128,7 @@ app.post('/urls/:id', (req, res) => {
 //DELETE A SHORTURL
 app.post('/urls/:id/delete', (req, res) => {
   if (urlDatabase[req.params.id].userID !== req.session['user_id']) {
-    res.status(403).redirect('/');
+    res.status(403).redirect('/urls?denied=true');
     return
   }
 
