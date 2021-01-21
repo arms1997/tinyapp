@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 const checkIfUserExists = (users, email) => {
   for (let key in users) {
     if (users[key].email === email) {
@@ -9,9 +11,11 @@ const checkIfUserExists = (users, email) => {
 
 const findUser = (users, email, password) => {
   for (let key in users) {
-    if (users[key].email === email && users[key].password === password) {
-      return key
-    }
+    if (users[key].email === email){
+      if(bcrypt.compareSync(users[key].password, password)) {
+        return key
+      }
+    } 
     return;
   }
 }
