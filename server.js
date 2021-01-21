@@ -18,8 +18,8 @@ app.use(cookieSession({
 app.use(methodOverride('_method'))
 
 const urlDatabase = {
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW", visited: 0 },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW", visited: 0 }
 };
 
 const users = {};
@@ -85,7 +85,7 @@ app.get('/urls/:shortURL', (req, res) => {
 
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
+    url: urlDatabase[req.params.shortURL],
     user: users[req.session['user_id']]
   };
 
@@ -95,6 +95,9 @@ app.get('/urls/:shortURL', (req, res) => {
 //GO TO LONGURL
 app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
+
+  urlDatabase[req.params.shortURL].visited += 1
+  console.log(urlDatabase[req.params.shortURL].visited)
 
   res.redirect(longURL);
 });
@@ -106,7 +109,8 @@ app.post('/urls', (req, res) => {
 
   urlDatabase[randomString] = {
     longURL: req.body.longURL,
-    userID: req.session['user_id']
+    userID: req.session['user_id'],
+    visited: 0
   };
 
   res.redirect(`/urls/${randomString}`);
