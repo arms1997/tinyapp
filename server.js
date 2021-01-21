@@ -6,8 +6,7 @@ const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const { generateRandomString } = require('./helper_functions/randomStringGenerator')
-const { checkIfUserExists, findUser, returnUsersUrls } = require('./helper_functions/checkEmail');
+const { checkIfUserExists, findUser, returnUsersUrls, generateRandomString } = require('./helper_functions/userHelperFunctions');
 
 
 app.set('view engine', 'ejs')
@@ -115,7 +114,8 @@ app.post('/urls', (req, res) => {
 
 //UPDATE LONGURL
 app.post('/urls/:id', (req, res) => {
-  if (urlDatabase[req.params.shortURL].userID !== req.session['user_id']) {
+
+  if (urlDatabase[req.params.id].userID !== req.session['user_id']) {
     res.status(403).redirect('/');
     return
   }
@@ -166,7 +166,7 @@ app.post('/login', (req, res) => {
   const userKey = findUser(users, email, password)
 
   if (userKey) {
-    req.session['user_id'] =  userKey;
+    req.session['user_id'] = userKey;
     res.redirect('/')
   } else {
     res.status(403).redirect('/login?failed=true')
@@ -216,7 +216,7 @@ app.post('/register', (req, res) => {
 
   users[id] = newUser;
 
-  req.session['user_id'] =  id;
+  req.session['user_id'] = id;
 
   res.redirect('/')
 })
