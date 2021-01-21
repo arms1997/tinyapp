@@ -21,6 +21,15 @@
     <%- include('./partials/_header') %>
     <main style="margin: 1em">
       <h3>Login</h3>
+      <% if(reroute) {%>
+      <div class="alert alert-primary" role="alert">
+        Make sure to login in order to use TinyAPP
+      </div>
+      <%} else if(failed) {%>
+      <div class="alert alert-danger" role="alert">
+        Incorrect email or password. Please try again.
+      </div>
+      <%}%>
       <form action="/login" method="POST">
         <div class="form-group">
           <label for="email">Email:</label>

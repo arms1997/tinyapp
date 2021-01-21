@@ -20,7 +20,20 @@
   <body>
     <div><%- include('./partials/_header'); %></div>
     <main style="margin: 1em">
+      <% if(denied) {%>
+        <div class="alert alert-danger" role="alert">
+          Please only access url's that belong to you
+        </div>
+      <%}%>
       <h3>My URLs</h3>
+      <!-- <script type="text/javascript">
+        let user = '<%=user %>'
+
+        if(!user) {
+          alert('Please make sure to login or register for an account');
+          window.location.replace("/login");
+        }
+      </script> -->
       <table class="table">
         <thead>
           <tr>
@@ -34,7 +47,7 @@
           <% for(let url in urls){%>
           <tr>
             <td><a href="/urls/<%=url%>"><%= url %></a></td>
-            <td><%= urls[url] %></td>
+            <td><%= urls[url].longURL %></td>
             <td>
               <a href="/urls/<%=url%>">
                 <button class="btn btn-outline-primary">Edit</button>

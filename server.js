@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser')
 
 const { generateRandomString } = require('./helper_functions/randomStringGenerator')
-const { checkIfUserExists, findUser } = require('./helper_functions/checkIfEmailExists');
+const { checkIfUserExists, findUser, returnUsersUrls } = require('./helper_functions/checkEmail');
 
 
 app.set('view engine', 'ejs')
@@ -13,8 +13,8 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cookieParser())
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
 const users = {}
@@ -23,7 +23,17 @@ app.get('/', (req, res) => {
   res.redirect('/urls');
 });
 
+app.get('/urls.json', (req, res) => {
+  res.json(urlDatabase);
+});
+
+//create new url page
 app.get('/urls/new', (req, res) => {
+  if (!users[req.cookies['user_id']]) {
+    res.redirect('/login');
+    return;
+  }
+
   const templateVars = {
     user: users[req.cookies['user_id']]
   }
@@ -31,62 +41,111 @@ app.get('/urls/new', (req, res) => {
   res.render('urls_new', templateVars);
 });
 
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
-
+//main page
 app.get('/urls', (req, res) => {
+  if (!users[req.cookies['user_id']]) {
+    res.redirect('/login?reroute=true');
+    return
+  }
+
+  let denied = req.query.denied ? true : false
+
+  let usersUrls = returnUsersUrls(urlDatabase, req.cookies['user_id'])
+
   const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies['user_id']]
+    urls: usersUrls,
+    user: users[req.cookies['user_id']],
+    denied
   };
 
   res.render('urls_index', templateVars);
 });
 
+
+//get a specific shortURL
 app.get('/urls/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    res.end('shortURL does not exist');
+    res.redirect('/');
+    return
+  }
+
+  if (urlDatabase[req.params.shortURL].userID !== req.cookies['user_id']) {
+    res.status(403).redirect('/?denied=true');
+    return
   }
 
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies['user_id']]
   };
 
   res.render('urls_show', templateVars);
 });
 
+//GO TO LONGURL
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
 
   res.redirect(longURL);
 })
 
+
+//creates a new shortURL
 app.post('/urls', (req, res) => {
   let randomString = generateRandomString();
 
-  urlDatabase[randomString] = req.body.longURL;
+  urlDatabase[randomString] = {
+    longURL: req.body.longURL,
+    userID: req.cookies['user_id']
+  }
 
   res.redirect(`/urls/${randomString}`);
 });
 
+
+//UPDATE LONGURL
 app.post('/urls/:id', (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL
+  if (urlDatabase[req.params.shortURL].userID !== req.cookies['user_id']) {
+    res.status(403).redirect('/');
+    return
+  }
+
+  urlDatabase[req.params.id].longURL = req.body.longURL
 
   res.redirect('/')
 })
 
+//DELETE A SHORTURL
 app.post('/urls/:id/delete', (req, res) => {
+  if (urlDatabase[req.params.id].userID !== req.cookies['user_id']) {
+    res.status(403).redirect('/');
+    return
+  }
+
   delete urlDatabase[req.params.id]
 
   res.redirect('/')
 })
 
+
+//LOGIN && LOGOUT METHODS
 app.get('/login', (req, res) => {
+  let reroute;
+  let failed;
+
+  if (req.query.reroute) {
+    reroute = JSON.parse(req.query.reroute)
+  }
+
+  if (req.query.failed) {
+    failed = JSON.parse(req.query.failed)
+  }
+
   const templateVars = {
-    user: users[req.cookies['user_id']]
+    user: users[req.cookies['user_id']],
+    reroute,
+    failed
   }
 
   res.render('urls_login', templateVars);
@@ -101,7 +160,7 @@ app.post('/login', (req, res) => {
     res.cookie('user_id', userKey)
     res.redirect('/')
   } else {
-    res.status(403).redirect('/login')
+    res.status(403).redirect('/login?failed=true')
   }
 })
 
@@ -111,6 +170,9 @@ app.post('/logout', (req, res) => {
   res.redirect('/')
 })
 
+
+
+//REGISTER METHODS
 app.get('/register', (req, res) => {
   const templateVars = {
     user: users[req.cookies['user_id']]
