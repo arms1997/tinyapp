@@ -25,16 +25,16 @@ const findUser = (users, email, password) => {
         return id
       }
     } 
-    return;
   }
+  return;
 }
 
 
 const returnUsersUrls = (urlDatabase, userID) => {
   let newObj = {};
-  for (let id in urlDatabase) {
-    if (id === userID) {
-      newObj[id] = urlDatabase[id]
+  for (let key in urlDatabase) {
+    if (urlDatabase[key].userID === userID) {
+      newObj[key] = urlDatabase[key]
     }
   }
 
