@@ -43,7 +43,7 @@ app.get('/urls/new', (req, res) => {
 
   const templateVars = {
     user: users[req.session['user_id']]
-  }
+  };
 
   res.render('urls_new', templateVars);
 });
@@ -117,7 +117,7 @@ app.post('/urls/:id', (req, res) => {
   if (urlDatabase[req.params.id].userID !== req.session['user_id']) {
     res.status(403).redirect('/urls?denied=true');
     return;
-  };
+  }
 
   urlDatabase[req.params.id].longURL = req.body.longURL;
 
@@ -144,11 +144,11 @@ app.get('/login', (req, res) => {
 
   if (req.query.reroute) {
     reroute = JSON.parse(req.query.reroute);
-  };
+  }
 
   if (req.query.failed) {
     failed = JSON.parse(req.query.failed);
-  };
+  }
 
   const templateVars = {
     user: users[req.session['user_id']],
@@ -169,7 +169,7 @@ app.post('/login', (req, res) => {
     res.redirect('/');
   } else {
     res.status(403).redirect('/login?failed=true');
-  };
+  }
 });
 
 app.post('/logout', (req, res) => {
@@ -193,16 +193,16 @@ app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
-    console.log('please make sure to provide all required information')
+    console.log('please make sure to provide all required information');
     res.status(400).redirect('/register');
     return;
-  };
+  }
 
   if (checkIfUserExists(users, email)) {
     console.log('user with the given email already exists in the db');
     res.status(400).redirect('/register');
     return;
-  };
+  }
 
   const id = generateRandomString();
 
@@ -218,7 +218,7 @@ app.post('/register', (req, res) => {
   req.session['user_id'] = id;
 
   res.redirect('/');
-})
+});
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
