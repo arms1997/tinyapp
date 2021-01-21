@@ -17,14 +17,32 @@
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= url.longURL %></h5>
         <p class="card-text">
-          Short url: <a target="_blank" href="/u/<%= shortURL %>"><%= shortURL %></a>
+          Short url:
+          <a target="_blank" href="/u/<%= shortURL %>"><%= shortURL %></a>
         </p>
         <p>Number of Times Visited: <%=url.visited %></p>
+        <p>Number of Visitors: <%=totalVisitors %></p>
+        <% for(let visit of url.visits) { %>
+        <p>
+          <b>Date of Visit:</b> <%= visit.timestamp %>, <b>Visitor ID:</b> <%=visit.visitor_id
+          %>
+        </p>
+        <%}%>
       </div>
-      <div class="card-footer text-muted ">
-        <form class="form-inline justify-content-center" action="/urls/<%=shortURL%>?_method=PUT" method="POST">
+      <div class="card-footer text-muted">
+        <form
+          class="form-inline justify-content-center"
+          action="/urls/<%=shortURL%>?_method=PUT"
+          method="POST"
+        >
           <label for="longURL">New URL</label>
-          <input class="form-control" type="text" placeholder="http://" name="longURL" style="width: 300px; margin: 1em" />
+          <input
+            class="form-control"
+            type="text"
+            placeholder="http://"
+            name="longURL"
+            style="width: 300px; margin: 1em"
+          />
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
       </div>
