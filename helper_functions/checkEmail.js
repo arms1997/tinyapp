@@ -12,7 +12,7 @@ const checkIfUserExists = (users, email) => {
 const findUser = (users, email, password) => {
   for (let key in users) {
     if (users[key].email === email){
-      if(bcrypt.compareSync(users[key].password, password)) {
+      if(bcrypt.compareSync(password, users[key].password)) {
         return key
       }
     } 
