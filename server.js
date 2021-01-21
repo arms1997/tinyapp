@@ -4,6 +4,7 @@ const PORT = 3000;
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const methodOverride = require('method-override')
 
 const { checkIfUserExists, findUser, returnUsersUrls, generateRandomString } = require('./helper_functions/userHelperFunctions');
 
@@ -14,6 +15,7 @@ app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
 }));
+app.use(methodOverride('_method'))
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
@@ -72,7 +74,7 @@ app.get('/urls', (req, res) => {
 //get a specific shortURL
 app.get('/urls/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    res.redirect('/urls?doesntExist=true');
+    res.status(404).redirect('/urls?doesntExist=true');
     return;
   }
 
@@ -112,7 +114,11 @@ app.post('/urls', (req, res) => {
 
 
 //UPDATE LONGURL
-app.post('/urls/:id', (req, res) => {
+app.put('/urls/:id', (req, res) => {
+  if (!urlDatabase[req.params.id]) {
+    res.status(404).userIDredirect('/urls?doesntExist=true');
+    return;
+  }
 
   if (urlDatabase[req.params.id].userID !== req.session['user_id']) {
     res.status(403).redirect('/urls?denied=true');
@@ -125,7 +131,12 @@ app.post('/urls/:id', (req, res) => {
 });
 
 //DELETE A SHORTURL
-app.post('/urls/:id/delete', (req, res) => {
+app.delete('/urls/:id', (req, res) => {
+  if (!urlDatabase[req.params.id]) {
+    res.status(404).userIDredirect('/urls?doesntExist=true');
+    return;
+  }
+
   if (urlDatabase[req.params.id].userID !== req.session['user_id']) {
     res.status(403).redirect('/urls?denied=true');
     return;
