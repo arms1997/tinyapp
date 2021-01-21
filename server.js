@@ -2,7 +2,8 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 const { generateRandomString } = require('./helper_functions/randomStringGenerator')
@@ -11,7 +12,10 @@ const { checkIfUserExists, findUser, returnUsersUrls } = require('./helper_funct
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cookieParser())
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+}))
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
@@ -34,13 +38,13 @@ app.get('/urls.users.json', (req, res) => {
 
 //create new url page
 app.get('/urls/new', (req, res) => {
-  if (!users[req.cookies['user_id']]) {
+  if (!users[req.session['user_id']]) {
     res.redirect('/login?reroute=true');
     return;
   }
 
   const templateVars = {
-    user: users[req.cookies['user_id']]
+    user: users[req.session['user_id']]
   }
 
   res.render('urls_new', templateVars);
@@ -48,18 +52,18 @@ app.get('/urls/new', (req, res) => {
 
 //main page
 app.get('/urls', (req, res) => {
-  if (!users[req.cookies['user_id']]) {
+  if (!users[req.session['user_id']]) {
     res.redirect('/login?reroute=true');
     return
   }
 
   let denied = req.query.denied ? true : false
 
-  let usersUrls = returnUsersUrls(urlDatabase, req.cookies['user_id'])
+  let usersUrls = returnUsersUrls(urlDatabase, req.session['user_id'])
 
   const templateVars = {
     urls: usersUrls,
-    user: users[req.cookies['user_id']],
+    user: users[req.session['user_id']],
     denied
   };
 
@@ -74,7 +78,7 @@ app.get('/urls/:shortURL', (req, res) => {
     return
   }
 
-  if (urlDatabase[req.params.shortURL].userID !== req.cookies['user_id']) {
+  if (urlDatabase[req.params.shortURL].userID !== req.session['user_id']) {
     res.status(403).redirect('/?denied=true');
     return
   }
@@ -82,7 +86,7 @@ app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies['user_id']]
+    user: users[req.session['user_id']]
   };
 
   res.render('urls_show', templateVars);
@@ -102,7 +106,7 @@ app.post('/urls', (req, res) => {
 
   urlDatabase[randomString] = {
     longURL: req.body.longURL,
-    userID: req.cookies['user_id']
+    userID: req.session['user_id']
   }
 
   res.redirect(`/urls/${randomString}`);
@@ -111,7 +115,7 @@ app.post('/urls', (req, res) => {
 
 //UPDATE LONGURL
 app.post('/urls/:id', (req, res) => {
-  if (urlDatabase[req.params.shortURL].userID !== req.cookies['user_id']) {
+  if (urlDatabase[req.params.shortURL].userID !== req.session['user_id']) {
     res.status(403).redirect('/');
     return
   }
@@ -123,7 +127,7 @@ app.post('/urls/:id', (req, res) => {
 
 //DELETE A SHORTURL
 app.post('/urls/:id/delete', (req, res) => {
-  if (urlDatabase[req.params.id].userID !== req.cookies['user_id']) {
+  if (urlDatabase[req.params.id].userID !== req.session['user_id']) {
     res.status(403).redirect('/');
     return
   }
@@ -148,7 +152,7 @@ app.get('/login', (req, res) => {
   }
 
   const templateVars = {
-    user: users[req.cookies['user_id']],
+    user: users[req.session['user_id']],
     reroute,
     failed
   }
@@ -162,7 +166,7 @@ app.post('/login', (req, res) => {
   const userKey = findUser(users, email, password)
 
   if (userKey) {
-    res.cookie('user_id', userKey)
+    req.session['user_id'] =  userKey;
     res.redirect('/')
   } else {
     res.status(403).redirect('/login?failed=true')
@@ -170,7 +174,7 @@ app.post('/login', (req, res) => {
 })
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session['user_id'] = null;
 
   res.redirect('/')
 })
@@ -180,7 +184,7 @@ app.post('/logout', (req, res) => {
 //REGISTER METHODS
 app.get('/register', (req, res) => {
   const templateVars = {
-    user: users[req.cookies['user_id']]
+    user: users[req.session['user_id']]
   }
 
   res.render('urls_register', templateVars);
@@ -212,7 +216,7 @@ app.post('/register', (req, res) => {
 
   users[id] = newUser;
 
-  res.cookie('user_id', id)
+  req.session['user_id'] =  id;
 
   res.redirect('/')
 })
