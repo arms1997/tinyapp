@@ -2,7 +2,8 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const { generateRandomString } = require('./helper_functions/randomStringGenerator')
 const { checkIfUserExists, findUser, returnUsersUrls } = require('./helper_functions/checkEmail');
@@ -27,10 +28,14 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
+app.get('/urls.users.json', (req, res) => {
+  res.json(users)
+})
+
 //create new url page
 app.get('/urls/new', (req, res) => {
   if (!users[req.cookies['user_id']]) {
-    res.redirect('/login');
+    res.redirect('/login?reroute=true');
     return;
   }
 
@@ -202,7 +207,7 @@ app.post('/register', (req, res) => {
     id,
     name,
     email,
-    password
+    password: bcrypt.hashSync(password, 10)
   }
 
   users[id] = newUser;
