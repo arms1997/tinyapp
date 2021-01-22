@@ -56,7 +56,7 @@ app.get('/urls', (req, res) => {
     res.redirect('/login?reroute=true');
     return;
   }
-
+  let doesntExist = req.query.doesntExist ? true: false;
   let denied = req.query.denied ? true : false;
 
   let usersUrls = returnUsersUrls(urlDatabase, req.session['user_id']);
@@ -64,7 +64,8 @@ app.get('/urls', (req, res) => {
   const templateVars = {
     urls: usersUrls,
     user: users[req.session['user_id']],
-    denied
+    denied,
+    doesntExist
   };
 
   res.render('urls_index', templateVars);
@@ -104,6 +105,11 @@ app.get('/urls/:shortURL', (req, res) => {
 
 //GO TO LONGURL
 app.get('/u/:shortURL', (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(404).redirect('/urls?doesntExist=true');
+    return;
+  }
+
   const longURL = urlDatabase[req.params.shortURL].longURL;
 
   urlDatabase[req.params.shortURL].visited += 1
@@ -173,6 +179,11 @@ app.delete('/urls/:id', (req, res) => {
 
 //LOGIN && LOGOUT METHODS
 app.get('/login', (req, res) => {
+  if (users[req.session['user_id']]) {
+    res.redirect('/urls');
+    return;
+  }
+
   let reroute;
   let failed;
 
@@ -216,8 +227,16 @@ app.post('/logout', (req, res) => {
 
 //REGISTER METHODS
 app.get('/register', (req, res) => {
+  if (users[req.session['user_id']]) {
+    res.redirect('/urls');
+    return;
+  }
+
+  let userExists = req.query.userExists ? true : false;
+
   const templateVars = {
-    user: users[req.session['user_id']]
+    user: users[req.session['user_id']],
+    userExists
   };
 
   res.render('urls_register', templateVars);
@@ -234,7 +253,7 @@ app.post('/register', (req, res) => {
 
   if (checkIfUserExists(users, email)) {
     console.log('user with the given email already exists in the db');
-    res.status(400).redirect('/register');
+    res.status(400).redirect('/register?userExists=true');
     return;
   }
 
