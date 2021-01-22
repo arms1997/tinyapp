@@ -21,10 +21,14 @@
     <div><%- include('./partials/_header'); %></div>
     <main style="margin: 1em">
       <% if(denied) {%>
-        <div class="alert alert-danger" role="alert">
-          Please only access url's that belong to you
-        </div>
-      <%}%>
+      <div class="alert alert-danger" role="alert">
+        Please only access url's that belong to you
+      </div>
+      <%} else if(doesntExist){%>
+      <div class="alert alert-danger" role="alert">
+        Seems like that shortURL doesnt exist
+      </div>
+      <%} %>
       <h3>My URLs</h3>
       <!-- <script type="text/javascript">
         let user = '<%=user %>'

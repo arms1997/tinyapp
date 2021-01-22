@@ -22,6 +22,11 @@
 
     <main style="margin: 1em">
       <h3>Register an Account</h3>
+      <% if(userExists) {%>
+        <div class="alert alert-danger" role="alert">
+          A user with that given email already exists
+        </div>
+      <%}%>
       <form action="/register" method="POST">
         <div class="form-group">
           <label for="name">Enter your name:</label>
